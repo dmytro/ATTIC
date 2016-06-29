@@ -1,0 +1,11 @@
+/* add shadow over image for placing title */
+/* Example: http://inforesist.org/set-lkafa-cafe-zapretila-puskat-v-zavedeniya-ukrainskix-voennyx-v-forme-chtoby-ne-meshat-otdyxat-lyudyam/ */
+{
+
+  width: 100%!important;
+  position: absolute!important;
+  left: 0!important;
+  bottom: 0!important;
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAFACAYAAACFhu0DAAAACXBIW…AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAD//54HBu9CFkB+AAAAAElFTkSuQmCC) repeat-x;
+  padding: 75px 0 20px;
+}
