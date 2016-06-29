@@ -1,0 +1,154 @@
+#
+# Generaly good defaults, but feel free to change
+#
+default_run_options[:pty] = true
+
+<%= recipe 'base' %>
+<%= recipe 'chef_solo' %>
+<%= recipe 'application_yml_file' %>
+
+<%= comment_block %Q{
+# --------------------------------------------
+# Rails application name
+# --------------------------------------------
+
+}%>
+set :application,         '<%=  ask_default "Application name : ", File.basename(%x{pwd}.chomp) %>'
+
+# For precompiling assets rails_env should be set to production
+set :rails_env,            'production'
+<%= comment_block %Q{
+
+# --------------------------------------------
+# Remote user and application location
+# --------------------------------------------
+
+}-%>
+set :user,                '<%= ask_default "User to deploy as: ", 'ubuntu' %>'
+set :use_sudo,            <%= agree_default "Use sudo for deployment? " , :yes %>
+set :deploy_to,           "<%= ask_default "Deploy directory: ", '/home/#{user}/apps/#{application}' %>"
+set :keep_releases,       <%= ask("Number of rollback releases : ", Integer) { |q| q.in = 1..30; q.default = 5 } %>
+
+set :web_domain,          "#{application}.com"
+
+<%= comment_block %Q{
+# --------------------------------------------
+# Ruby, RVM Configuration
+# --------------------------------------------
+
+}-%>
+require 'rvm/capistrano'
+require 'bundler/capistrano'
+set :rvm_ruby_string,     '<%= ruby_version %>'
+set :rvm_path,            "/usr/local/rvm"
+set :rvm_type,            :system
+
+<%= comment_block %Q{
+# --------------------------------------------
+# Multistage extension configuraion
+# --------------------------------------------
+
+}-%>
+
+require 'capistrano/ext/multistage'
+<% x = multistage %>
+set :stages,              <%= x[:stages].to_s %>
+set :default_stage,       '<%= x[:default] %>'
+
+<%= comment_block %Q{
+
+# --------------------------------------------
+# Source code management
+# --------------------------------------------
+
+}-%>
+<% @scm = scm -%>
+<%= File.read "#{CapistranoDeployGenerator.source_root}/#{@scm}.tpl" -%>
+<% if @scm =~ /git/ -%>
+set :repository,          "<%= git_remote %>"
+set :deploy_via,          :<%= menu_with_default "Deploy strategy:", %w(remote_cache copy), :remote_cache -%>
+set :git_enable_submodules, 1
+<% end -%>
+
+
+<%= comment_block %Q{
+
+# --------------------------------------------
+# Production database configuration
+# --------------------------------------------
+
+}-%>
+set :create_database_yaml,        true
+<% db = database -%>
+
+<%= recipe 'database' %>
+set :database_adapter,            '<%= db %>'
+<% case db -%>
+<% when 'postgres' -%>
+<%= recipe 'posgresql' %>
+<%= recipe 'posgresql_backup' %>
+<% when 'sqlite3' -%>
+set :production_password,         ""
+<% end -%>
+
+<%= comment_block %Q{
+
+# --------------------------------------------
+# Asset precompile configuration
+# --------------------------------------------
+}-%>
+<%= recipe select_asset_precompile -%>
+
+<%= comment_block %Q{
+
+# --------------------------------------------
+# Web server configuration
+# --------------------------------------------
+
+}-%>
+set :domain_name,     <%= ask_default "Domain name for web server configuration : ", application %>
+<%
+case menu_with_default "Production uses Unicorn server. Which webserver to use with it?", 
+['nginx', 'apache'],
+'nginx'
+
+when 'nginx'
+%>
+<%=  recipe 'nginx' %>
+<% when 'apache' -%>
+<%=  recipe 'apache_unicorn' %>
+<% end -%>
+<%= recipe 'unicorn' %>
+set :unicorn_workers, <%= ask("Number of Unicorn workers : ", Integer) { |q| q.in = 1..30; q.default = 10  } %>
+<%= comment_block %Q{
+# --------------------------------------------
+# Load additional capistrano recipes
+# --------------------------------------------
+}-%>
+<%= recipe 'logs' %>
+
+
+<%= comment_block %Q{
+# --------------------------------------------
+# Common tasks
+# --------------------------------------------
+}-%>
+<%= recipe 'setup' %>
+task :setup do
+  top.deploy.setup
+  top.unicorn.setup
+end
+  
+after "deploy", "deploy:migrate"
+after "deploy", "deploy:reload"
+after "deploy", "deploy:cleanup"
+
+namespace :deploy do  
+  task :reload do 
+    top.unicorn.restart
+  end
+
+  task :migrate do
+    run "cd #{current_path} && RAILS_ENV=production bundle exec rake --TRACE db:migrate"
+  end
+end

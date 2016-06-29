@@ -1,0 +1,16 @@
+Description:
+    Generate deployment configuration to be used with Capistrano.
+
+    Following options are supported:
+    
+    * capify - install Capfile
+    
+    * deploy - Create config/deploy.rb file and config/deploy
+      directory subtree with required componenets for capistrano.
+
+    * modules - Install supporting Git repositories as submodules.
+
+    * all - all of the above.
+
+Example:
+    rails generate capistrano_deploy deploy
