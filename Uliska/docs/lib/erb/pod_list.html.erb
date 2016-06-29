@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head><%= @highlighter_setup %><%= @frames_on_off %></head>
+  <%= @body_start %>
+<h1> Uliska Scanner Perl Modules </h1>
+
+<hr>
+<table>
+<% @list.each do |l| %>
+  <tr> 
+    <td> <%= l[:src] %> 
+    <td> 
+      <% if l[:pod_html].nil? %> POD
+      <% else %><a href='../<%= l[:pod_html] %>'> POD </a> 
+      <% end %> 
+    <td> <a href='../<%= l[:src_html] %>'> Source </a>
+<% end %>
+</table>
+<hr>
+</html>
+</body>

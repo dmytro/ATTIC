@@ -1,0 +1,8 @@
+Included here library module YAML is 
+CPAN's http://search.cpan.org/~ingy/YAML-Old-0.81/
+
+It included just to make Uliska package self-contained. If you prefer to use
+other YAML generator, please feel free to do so and to replace user YAML::Old
+in Uliska.pm.
+
+-- Dmytro

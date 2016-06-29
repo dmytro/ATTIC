@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+=begin rdoc
+
+= NAME 
+
+uliska_parser - UNIX/Linux Inventory Parser
+
+=end
+
+$: << File.dirname(__FILE__) + "/lib"
+
+require 'uliska_parser'
+require 'pp'
+
+Uliska::Parser.instance.read
+Uliska::Parser.load_parsers
+
+if ARGV[0] == 'pp'
+  pp Uliska::Parser.data
+else
+  print Uliska::Parser.data.to_json
+end
+

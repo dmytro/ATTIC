@@ -1,0 +1,14 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head><%= @highlighter_setup %><%= @frames_on_off %></head>
+  <%= @body_start %>
+    <div id="content"><div id='filecontents'>
+    <h1>Source of <%= @perl_file_name %></h1>
+    <hr>
+      <pre type="syntaxhighlighter"  class="brush: perl">
+        <%= @perl_file_text %>
+      </pre>
+      <hr>
+      </div>
+  </body>
+</html>

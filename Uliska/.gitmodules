@@ -1,0 +1,3 @@
+[submodule "docs/SyntaxHighlighter"]
+	path = docs/SyntaxHighlighter
+	url = git://github.com/alexgorbatchev/SyntaxHighlighter.git

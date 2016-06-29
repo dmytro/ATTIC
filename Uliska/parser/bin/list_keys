@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+require 'pp'
+require 'yaml'
+
+# Script to retrieve all keys gernerated by Uliska Scanner's modules -
+# to identify gaps in data collected y each of the modules
+
+DATA_DIR = File.dirname(File.dirname(File.expand_path(__FILE__))) + '/spec/data'
+
+files = Dir.glob("#{DATA_DIR}/*.yml").sort
+files.delete_if { |x|  x =~ /(sample|test)/}
+
+kernel, topics = { }, { }
+
+files.each do |f|  
+  data = YAML::load_file(f)
+  kernel[f] = data['kernel']['name']
+  topics[f] = data.keys 
+end
+
+
+
+done = []
+
+topics.keys.each do |a|
+  topics.keys.each do |b|
+    next if a == b
+    next if done.include?([a,b].sort)
+    done << [a,b].sort
+
+    diff = topics[a] - topics[b]
+    diff2 = topics[b] - topics[a]
+
+    if diff && diff2 
+      puts '--------------------------------------------'
+      puts "#{File.basename(a)} (#{kernel[a]}) vs #{File.basename(b)} (#{kernel[b]})"
+      puts '--------------------------------------------'      
+      puts "<<< " + diff.sort.join(', ')
+      puts ">>> " + diff2.sort.join(', ')
+    end
+  end
+end
+

@@ -1,0 +1,8 @@
+    <% $assets[:SyntaxHighligher][:js].each do |x| %>
+      <script type="text/javascript" src="../<%= x[:dst] %>"></script>
+    <% end %>
+    
+    <% $assets[:SyntaxHighligher][:css].each do |x| %>
+      <link href="../<%= x[:dst] %>" rel="stylesheet" type="text/css" />
+    <% end %>
+    <script type="text/javascript">SyntaxHighlighter.all();</script>

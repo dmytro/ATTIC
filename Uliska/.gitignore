@@ -1,0 +1,9 @@
+*.yml
+.*.swp
+.#*
+scanner/lib/Uliska/do
+.yardoc
+.DS_Store
+**/doc/
+/doc/
+pod2htm?.tmp

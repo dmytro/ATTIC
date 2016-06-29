@@ -1,0 +1,158 @@
+require 'erb'
+require 'pp'
+
+
+desc "Generate YARD documentation"
+task :doc => ["yard:doc", "pod:doc"] { }
+
+# All JavaScript, CSS files
+$assets = { }
+
+namespace :yard do 
+  task :doc do
+    sh "yardoc"
+  end
+end
+
+
+namespace :assets do
+
+  directory "doc/js"
+  directory "doc/css"
+
+  # Create list of all assets required for SyntaxHighlighter
+  task :list do 
+    sh_dir = 'docs/SyntaxHighlighter'
+    $assets[:SyntaxHighligher] = {
+      # Javascript files 
+      :js => %w{ XRegExp.js shCore.js shBrushPerl.js}.map{ |x| 
+        { :name => x, :src => "#{sh_dir}/scripts/#{x}", :dst => 'doc/js/' << x }
+      },
+      # CSS files
+      :css => %w{ shCore.css shThemeDefault.css}.map{ |x|
+        { :name => x, :src => "#{sh_dir}/styles/#{x}", :dst => 'doc/css/' << x }
+      }
+    }
+  end
+
+ 
+  desc  'Install all files required for SyntaxHighlighting'
+  task :install => [:list, "yard:doc", "doc/js", "doc/css"] do
+    
+    ($assets[:SyntaxHighligher][:js] + $assets[:SyntaxHighligher][:css]).each do |fl|
+      FileUtils.cp fl[:src], fl[:dst]
+    end
+  end
+  
+end
+
+
+namespace :pod do
+
+
+  TPL_DIR=File.dirname(__FILE__)+"/docs/lib/erb"
+  
+  # Template for PODs list html gfile
+  TPL = File.read("#{TPL_DIR}/pod_list.html.erb")
+  TPL_SHORT = File.read("#{TPL_DIR}/pod_list_short.html.erb")
+  
+  # Template for Perl module source file HTML
+  POD_TPL = File.read("#{TPL_DIR}/perl_source.html.erb")
+
+  desc "Get list of perl modules in current directory tree"
+  task :list do
+    # Creates a list of all .pm and .pl files as Array of
+    # Hash'es. Hash keys:
+    #  - :src - path to source file
+    #  - :pod_html -> nil if source file does not have POD, or path to (to be) generated .html file with pod2html
+    #  - :src_html - path to HTML with source of file
+    @list = []
+
+    pods = Dir.glob("**/*.p[ml]").reject { |x| x =~ /\/YAML\// }    
+    pods.each do |l|
+      l.sub!(/^\.\//,'')
+      @list << { 
+        :src => l, 
+        :pod_html => File.readlines(l).grep(/^=cut/).empty? ? nil : 'doc/'<< l.sub(File.dirname(__FILE__), '').gsub('/', '_') << '.html',
+        :src_html => 'doc/'<< l.sub(File.dirname(__FILE__), '').gsub('/', '_').sub(/(\.p[ml])$/, "#{$1}.src.html"),
+      }
+    end
+  end
+
+  task :pod => ["assets:install", :list] do 
+    converted = 0
+    @list.each do |file|
+      unless file[:pod_html] == nil
+        sh "pod2html --noindex --header --infile #{file[:src]} --outfile #{file[:pod_html]}"
+        converted += 1
+      end
+    end
+    puts "Total #{@list.count} *.pm file(s) found, #{converted} POD HTMLized."
+    Rake::Task["pod:index"].invoke 
+    Rake::Task["pod:source"].invoke 
+  end
+
+  # Read and generate common tempplates
+  task :templates => "assets:list" do 
+    @frames_on_off = File.read("#{TPL_DIR}/frames_on_off.html.erb")
+    @body_start    = File.read("#{TPL_DIR}/body_start.html.erb")
+    @highlighter_setup = ERB.new(File.read("#{TPL_DIR}/highlighter_setup.html.erb")).result
+    @pod_stub = ERB.new(File.read("#{TPL_DIR}/pod_stub.txt.erb"))
+  end
+
+  desc "Add JS and styles to have navigation and TOC YARD-style in POD's"
+  task :toc => ["assets:install", :list, :pod, :templates] do 
+
+    @list.each do |file|
+      unless file[:pod_html] == nil
+        text = File.read(file[:pod_html])
+        text.gsub!('<pre>', '<pre class="brush: perl">')
+        text.gsub!('<head>',"<head>  #{@highlighter_setup} #{@frames_on_off}")
+        text.sub!('<h1>', '<div id="content"><div id=\'filecontents\'><h1>')
+        text.sub!(/<body[^>]*>/, @body_start)
+        
+        File.open(file[:pod_html], 'w'){ |f| f.print text }
+      end
+    end
+  end
+
+  desc "Create index of POD html files"
+  task :index => [:list, :templates] do 
+    File.open('./doc/pod_index.html', 'w') do |f|
+      f.print(ERB.new(TPL, 0, "").result(binding))
+    end
+    File.open('./doc/pod_index_short.html', 'w') do |f|
+      f.print(ERB.new(TPL_SHORT, 0, "").result(binding))
+    end
+  end
+
+
+  desc "Generate Perl source HTML's"
+  task :source => [:pod, :templates] do
+    
+    @list.each do |file|
+      File.open("#{file[:src_html]}", 'w') { |out|
+        @perl_file_text = File.read file[:src]
+        @perl_file_name = file[:src]
+        out.print ERB.new(POD_TPL).result
+      }
+    end
+  end
+
+
+  desc "Create HTML documetnation for Perl files"
+  task :doc => [:toc, :pod, :list, :index] do
+  end
+
+  desc "Add POD stubs to .pm files that do not have it"
+  task :add => [:list, :templates] do
+    
+   @list.each do |f|
+      next if f[:pod_html]
+      text = File.readlines(f[:src])
+      @f = f
+      text.insert(2,@pod_stub.result)
+      File.open(f[:src], 'w'){ |f| f.puts text}
+    end
+  end
+end

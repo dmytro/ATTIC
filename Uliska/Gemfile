@@ -1,0 +1,10 @@
+
+ source 'http://rubygems.org'
+
+gem 'redcarpet'
+gem 'yard', '~> 0.8'
+
+#
+# For use in parser for testing data structure
+# 
+gem 'rspec_normalized_hash', "~> 0.0.1"

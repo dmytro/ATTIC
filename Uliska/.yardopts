@@ -1,0 +1,8 @@
+*/lib/**/*.rb
+*/spec/lib/**/*.rb
+-
+scanner/docs/ScannerOverview.md
+scanner/docs/ExtendingScanner.md
+scanner/docs/ScannerRules.md
+parser/docs/ParserOverview.md
+parser/docs/ParserDataStructure.md
