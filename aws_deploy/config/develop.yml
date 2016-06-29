@@ -1,0 +1,26 @@
+:app:
+  :secret: secret.simply_cubed.yml
+  :steps:
+    :capistrano: true
+    :route53: false
+
+
+:ec2:
+  :security_group: rails-web-server
+  :instance:
+    :name: develop_intilligent
+    :key_name: simply_cubed
+
+  :dns:
+    :domain: simplycubed.com.
+
+:chef:
+  :json: webserver.json
+
+:cap:
+  # Capistrano is not used here, so just need to crate this dir and
+  # subdirectories under it
+  # mkdir -p tmp/dummy/config/deploy
+  :directory: ../intilligent_saas
+  #:branch: master
+  :branch: develop

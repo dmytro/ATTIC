@@ -1,0 +1,23 @@
+source 'http://rubygems.org'
+
+gem 'aws-sdk'
+gem 'systemu'
+gem 'debugger'
+gem 'chef'
+gem 'librarian'
+gem 'capistrano'
+gem 'mixlib-cli'
+gem 'activesupport'
+gem 'redcarpet'
+
+gem 'deep_merge'
+
+group :development,:test do 
+  gem 'rspec-core'
+  gem 'rspec-mocks'
+  gem 'rspec-expectations'
+  gem 'yard', "~> 0.8"
+  gem "growl", "~> 1.0.3"
+  gem "guard-brakeman", "~> 0.5.0"
+  gem "guard-rspec", "~> 1.2.1"
+end

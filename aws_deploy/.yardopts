@@ -1,0 +1,6 @@
+lib/aws**/*.rb
+config/*.rb
+-
+README.md
+INSTALL.md
+CONFIGURATION.md

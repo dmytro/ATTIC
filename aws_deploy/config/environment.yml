@@ -1,0 +1,131 @@
+---
+# Starting from ./ directories are local to project tree, if starting
+# from '/' - from root.
+:app:
+  # Log file. 
+  :log: ./var/log/awsdeploy.log
+  #
+  # Marshal is local storage file. Keepsstatus information between
+  # runs.
+  #
+  :marshal: ./var/run/marshal
+
+  ##
+  # Application specific configuration file. Application file will be
+  # loaded after environment.yml and thus can overrtide any of the
+  # settings in this file.
+  #
+  # App. config is expected to be in the same location as
+  # environment.yml, ./config
+  #
+  # :config: custom.yml
+  
+  ##
+  # Should be able to skip some steps. Define here what steps are
+  # executed and what are not
+  :steps:
+    :ec2: true
+    :chef: true
+    :capistrano: true
+    :route53: true
+  
+# ------------------------------------------------------------
+# AWS EC2 configuration, including Route 53
+# ------------------------------------------------------------
+:ec2:
+  :region: null
+  :instance_type: t1.micro
+  :ami_id: ami-3d4ff254
+  :security_group: quick-start-1
+  :root-device-type: ebs
+  :architecture: x86_64
+  
+  :instance:
+    :name: test-instance
+    ##
+    # create: can be true, false or `:try_reuse` (Symbol).
+    #
+    # true: - new instance will always be created, regardless of anything
+    #
+    # false - re-use existing instance. Exit if instance does not exist.
+    #
+    # :try_reuse - try to re-use, but if it does not exist, then
+    #     create new one. It uses instance id from marshal store file,
+    #     if id does not exists new instance will be created
+    :create: :try_reuse
+
+    ##
+    # :terminate_on_stop - true/false
+    #
+    # false - only stops instance
+    # true  - terminate after stop
+    #
+    :terminate_on_stop: false
+    :key_name: default_key
+    :user: ubuntu
+
+  # ---------------
+  # Route 53 config
+  # ---------------
+  :dns:
+    :ttl: 300
+    #
+    # Hosted zone name in AWS. Should have dot at the end.
+    #
+    :domain: yarylo.sytes.net.
+    #
+    # Specify subdomain name (String) if you want sub-domain name of
+    # your choosing, or `:branch` (Symbol) to set it to released git
+    # branch name.
+    #
+    :subdomain: :branch 
+    
+
+# ------------------------------------------------------------
+# Chef configuration
+# ------------------------------------------------------------
+:chef:
+  :json: empty.json
+  :dir: ../chef-solo
+  ##
+  # Do we need to run librarian install before deployment. Usually
+  # you'd need to have it only for first run.
+  :librarian_install: false
+
+# ------------------------------------------------------------
+# Capistrano
+# ------------------------------------------------------------
+
+:cap:
+  #
+  # Where application directory is located locally, relative to the
+  # root directory of aws-deploy.
+  #
+  :directory: ../TeamMight
+
+  #
+  # Branch to deploy. Branch name is also used as DNS ssubdomain name
+  # if APP[:ec2][:dns][:subdomain] == :branch (Symbol)
+  #
+  #:branch: onboarding
+  :branch: css-restructure
+  
+  #
+  # Stages for which configuration file will be generated from
+  # ERB.
+  #
+  :generate_config: ["staging"]
+
+  # Stage for multistage deployment. 
+  #
+  # This is also used for parsing ERB file, which should be found in
+  # app/config/deploy/#{:stage}.rb.erb file
+  #
+  :stage: staging
+
+  #
+  # Capistrano task: i.e. execute cap `:task` in app directory
+  # 
+  :task: deploy
+
+

@@ -1,0 +1,15 @@
+private.yml
+#
+# All applcation specific secret files
+#
+config/secret.yml
+config/secret.*.yml
+config/secret_*.yml
+config/*.pem
+run_instance-sdk.rb
+.yardoc
+doc
+var
+tmp
+.\#*
+.DS_Store

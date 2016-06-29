@@ -1,0 +1,16 @@
+:app:
+  :secret: secret.custom.yml
+  :steps:
+    :capistrano: false
+    :route53: false
+
+
+:ec2:
+  :security_group: default
+  :instance:
+    :name: ubuntu_server
+    :key_name: custom_key
+
+  :dns:
+    :domain: custom_domain.com.
+
